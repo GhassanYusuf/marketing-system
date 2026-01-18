@@ -46,3 +46,24 @@ export interface Review {
   feedback?: string;
   reviewedAt: string;
 }
+
+export interface Property {
+  id: string;
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  description: string;
+  imageUrl: string;
+  propertyManagerId?: string;
+  createdAt: string;
+  totalFlats: number;
+  rentedFlats: number;
+  nonRentedFlats: number;
+  monthlyRent: number;
+  maintenanceCost: number;
+  ewaCost: number;
+  municipalityCost: number;
+  internetCost: number;
+}

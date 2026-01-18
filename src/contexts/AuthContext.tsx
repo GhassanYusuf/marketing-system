@@ -25,9 +25,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Initialize local storage with mock data
     initializeLocalStorage();
-    
+
     // Get current user from localStorage
-    const currentUser = getCurrentUser();
+    let currentUser = getCurrentUser();
+
+    // If no user is logged in, auto-login as admin for demo purposes
+    if (!currentUser) {
+      const users = JSON.parse(localStorage.getItem('property_mgmt_users') || '[]');
+      const adminUser = users.find((u: User) => u.role === 'admin');
+      if (adminUser) {
+        localStorage.setItem('property_mgmt_current_user', JSON.stringify(adminUser));
+        currentUser = adminUser;
+      }
+    }
+
     setUser(currentUser);
     setIsLoading(false);
   }, []);

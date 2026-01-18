@@ -1,4 +1,4 @@
-import { User, MaintenanceRequest, UserRole } from '@/types';
+import { User, MaintenanceRequest, UserRole, Property } from '@/types';
 
 // Mock users for demonstration
 export const mockUsers: User[] = [
@@ -56,11 +56,77 @@ export const mockRequests: MaintenanceRequest[] = [
   }
 ];
 
+// Mock properties
+export const mockProperties: Property[] = [
+  {
+    id: '1',
+    name: 'Sunset Apartments',
+    address: '123 Main Street',
+    city: 'Springfield',
+    state: 'IL',
+    zipCode: '62701',
+    description: 'Modern apartment complex with excellent amenities and community features.',
+    imageUrl: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400&h=300&fit=crop',
+    propertyManagerId: '3',
+    createdAt: '2024-01-01T00:00:00Z',
+    totalFlats: 50,
+    rentedFlats: 42,
+    nonRentedFlats: 8,
+    monthlyRent: 1200,
+    maintenanceCost: 2500,
+    electricityCost: 800,
+    waterCost: 400,
+    municipalityCost: 600,
+    internetCost: 200
+  },
+  {
+    id: '2',
+    name: 'Riverside Condos',
+    address: '456 River Road',
+    city: 'Springfield',
+    state: 'IL',
+    zipCode: '62702',
+    description: 'Luxury condos with river views and premium finishes.',
+    imageUrl: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=300&fit=crop',
+    propertyManagerId: '3',
+    createdAt: '2024-01-01T00:00:00Z',
+    totalFlats: 30,
+    rentedFlats: 28,
+    nonRentedFlats: 2,
+    monthlyRent: 1800,
+    maintenanceCost: 1800,
+    ewaCost: 900,
+    municipalityCost: 500,
+    internetCost: 150
+  },
+  {
+    id: '3',
+    name: 'Oakwood Villas',
+    address: '789 Oak Avenue',
+    city: 'Springfield',
+    state: 'IL',
+    zipCode: '62703',
+    description: 'Spacious villas with private gardens and modern design.',
+    imageUrl: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=400&h=300&fit=crop',
+    createdAt: '2024-01-01T00:00:00Z',
+    totalFlats: 20,
+    rentedFlats: 15,
+    nonRentedFlats: 5,
+    monthlyRent: 2200,
+    maintenanceCost: 1200,
+    electricityCost: 500,
+    waterCost: 250,
+    municipalityCost: 400,
+    internetCost: 100
+  }
+];
+
 // Local storage keys
 export const STORAGE_KEYS = {
   CURRENT_USER: 'property_mgmt_current_user',
   USERS: 'property_mgmt_users',
   REQUESTS: 'property_mgmt_requests',
+  PROPERTIES: 'property_mgmt_properties',
   UPLOADED_IMAGES: 'property_mgmt_images'
 };
 
@@ -71,6 +137,9 @@ export const initializeLocalStorage = () => {
   }
   if (!localStorage.getItem(STORAGE_KEYS.REQUESTS)) {
     localStorage.setItem(STORAGE_KEYS.REQUESTS, JSON.stringify(mockRequests));
+  }
+  if (!localStorage.getItem(STORAGE_KEYS.PROPERTIES)) {
+    localStorage.setItem(STORAGE_KEYS.PROPERTIES, JSON.stringify(mockProperties));
   }
   if (!localStorage.getItem(STORAGE_KEYS.UPLOADED_IMAGES)) {
     localStorage.setItem(STORAGE_KEYS.UPLOADED_IMAGES, JSON.stringify({}));
@@ -184,4 +253,8 @@ export const getImageData = (imageId: string): string | null => {
 
 export const getUsers = (): User[] => {
   return JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS) || '[]');
+};
+
+export const getProperties = (): Property[] => {
+  return JSON.parse(localStorage.getItem(STORAGE_KEYS.PROPERTIES) || '[]');
 };

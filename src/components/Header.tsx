@@ -2,7 +2,8 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { logoutUser } from '@/lib/localStorage';
-import { Building2, LogOut, User } from 'lucide-react';
+import { Building2, LogOut, User, Settings } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 
 const Header: React.FC = () => {
   const { user, setUser } = useAuth();
@@ -43,6 +44,14 @@ const Header: React.FC = () => {
 
         {user && (
           <div className="flex items-center gap-4">
+            {user.role === 'admin' && (
+              <Link to="/settings">
+                <Button variant="ghost" size="sm">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Settings
+                </Button>
+              </Link>
+            )}
             <div className="flex items-center gap-2">
               <User className="h-4 w-4 text-gray-600" />
               <span className="text-sm font-medium text-gray-900">{user.name}</span>

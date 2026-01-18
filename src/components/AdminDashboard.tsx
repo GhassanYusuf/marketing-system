@@ -3,19 +3,42 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+
 import { useToast } from '@/hooks/use-toast';
-import { MaintenanceRequest } from '@/types';
-import { getRequests, updateRequest, getUsers, getImageData } from '@/lib/localStorage';
+import { MaintenanceRequest, Property } from '@/types';
+import { getRequests, updateRequest, getUsers, getImageData, getProperties } from '@/lib/localStorage';
 import { useAuth } from '@/contexts/AuthContext';
-import { Clock, AlertCircle, CheckCircle, XCircle, Eye, UserCheck, Users } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Clock, AlertCircle, CheckCircle, XCircle, Eye, UserCheck, Users, DollarSign, Wrench, Zap, Droplets, Building, Wifi } from 'lucide-react';
 
 const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [requests, setRequests] = useState<MaintenanceRequest[]>(() => getRequests());
+  const [properties, setProperties] = useState<Property[]>(() => getProperties());
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
-  
   const propertyManagers = getUsers().filter(u => u.role === 'property_manager');
+
+  // Get default currency from settings
+  const getDefaultCurrency = () => {
+    const defaultCurrencies = [
+      { code: 'USD', symbol: '$', name: 'US Dollar' },
+      { code: 'EUR', symbol: '€', name: 'Euro' },
+      { code: 'GBP', symbol: '£', name: 'British Pound' },
+      { code: 'CAD', symbol: 'C$', name: 'Canadian Dollar' },
+      { code: 'AUD', symbol: 'A$', name: 'Australian Dollar' },
+      { code: 'JPY', symbol: '¥', name: 'Japanese Yen' },
+      { code: 'INR', symbol: '₹', name: 'Indian Rupee' },
+      { code: 'BRL', symbol: 'R$', name: 'Brazilian Real' },
+      { code: 'MXN', symbol: 'Mex$', name: 'Mexican Peso' },
+    ];
+    const selectedCode = localStorage.getItem('selectedCurrency') || 'USD';
+    return defaultCurrencies.find(c => c.code === selectedCode) || defaultCurrencies[0];
+  };
+
+  const selectedCurrencyData = getDefaultCurrency();
 
   const handleAssignRequest = (requestId: string, managerId: string) => {
     const updatedRequest = updateRequest(requestId, {
@@ -94,6 +117,8 @@ const AdminDashboard: React.FC = () => {
         <p className="text-gray-600">Welcome back, {user?.name}</p>
       </div>
 
+
+
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
         <Card>
@@ -132,6 +157,119 @@ const AdminDashboard: React.FC = () => {
             <div className="text-sm text-gray-600">Approved</div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Properties Section */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Properties</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {properties.map((property) => {
+            const occupancyRate = (property.rentedFlats / property.totalFlats) * 100;
+            const revenueLoss = ((property.nonRentedFlats || 0) * (property.monthlyRent || 0)) || 0;
+            const monthlyRevenue = ((property.rentedFlats || 0) * (property.monthlyRent || 0)) || 0;
+
+            return (
+              <Card key={property.id} className="overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+                <div className="aspect-video relative">
+                  <img
+                    src={property.imageUrl}
+                    alt={property.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <CardHeader>
+                  <CardTitle className="text-lg">{property.name}</CardTitle>
+                  <CardDescription>
+                    {property.address}, {property.city}, {property.state} {property.zipCode}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-gray-600">{property.description}</p>
+
+                  {/* Occupancy Statistics */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Occupancy</span>
+                      <span className="text-sm text-gray-600">{property.rentedFlats}/{property.totalFlats} flats</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${occupancyRate}%` }}
+                      ></div>
+                    </div>
+                    <div className="text-xs text-gray-500">{occupancyRate.toFixed(1)}% occupied</div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    {/* Revenue Loss */}
+                    <div className="flex items-center justify-between p-2 bg-red-100 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="h-4 w-4 text-red-700" />
+                        <span className="text-sm font-medium">Revenue Loss</span>
+                      </div>
+                      <span className="text-sm font-bold text-red-700">{selectedCurrencyData.symbol}{revenueLoss.toLocaleString()}</span>
+                    </div>
+
+                    {/* Monthly Revenue */}
+                    <div className="flex items-center justify-between p-2 bg-green-50 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="h-4 w-4 text-green-500" />
+                        <span className="text-sm font-medium">Revenue</span>
+                      </div>
+                      <span className="text-sm font-bold text-green-600">{selectedCurrencyData.symbol}{monthlyRevenue.toLocaleString()}</span>
+                    </div>
+
+                    {/* Maintenance */}
+                    <div className="flex items-center justify-between p-2 bg-blue-50 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <Wrench className="h-4 w-4 text-blue-500" />
+                        <span className="text-sm font-medium">Maintenance</span>
+                      </div>
+                      <span className="text-sm font-bold text-blue-600">{selectedCurrencyData.symbol}{property.maintenanceCost.toLocaleString()}</span>
+                    </div>
+
+                    {/* EWA */}
+                    <div className="flex items-center justify-between p-2 bg-blue-50 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <Zap className="h-4 w-4 text-blue-500" />
+                        <span className="text-sm font-medium">EWA</span>
+                      </div>
+                      <span className="text-sm font-bold text-blue-600">{selectedCurrencyData.symbol}{(property.ewaCost || 0).toLocaleString()}</span>
+                    </div>
+
+                    {/* Municipality */}
+                    <div className="flex items-center justify-between p-2 bg-purple-50 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <Building className="h-4 w-4 text-purple-500" />
+                        <span className="text-sm font-medium">Municipality</span>
+                      </div>
+                      <span className="text-sm font-bold text-purple-600">{selectedCurrencyData.symbol}{(property.municipalityCost || 0).toLocaleString()}</span>
+                    </div>
+
+                    {/* Internet */}
+                    <div className="flex items-center justify-between p-2 bg-green-50 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <Wifi className="h-4 w-4 text-green-500" />
+                        <span className="text-sm font-medium">Internet</span>
+                      </div>
+                      <span className="text-sm font-bold text-green-600">{selectedCurrencyData.symbol}{(property.internetCost || 0).toLocaleString()}</span>
+                    </div>
+                  </div>
+
+                  {property.propertyManagerId && (
+                    <div className="flex items-center gap-2 pt-2 border-t">
+                      <Users className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm text-gray-600">
+                        Managed by: {getManagerName(property.propertyManagerId)}
+                      </span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       </div>
 
       {/* Filter */}
